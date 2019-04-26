@@ -20,6 +20,21 @@ class App extends Component {
     this.deselectAll = this.deselectAll.bind(this);
   }
 
+  componentDidMount() {
+    const boxPosition = this.box.getBoundingClientRect();
+    // get the current center point
+    const boxCenterX = boxPosition.left + boxPosition.width / 2;
+    const boxCenterY = boxPosition.top + boxPosition.height / 2;
+
+    // update the state
+    this.setState({
+      boxCenterPoint: { x: boxCenterX, y: boxCenterY }
+    });
+    // in case the event ends outside the box
+    window.onmouseup = this.mouseUpHandler;
+    window.onmousemove = this.mouseMoveHandler;
+  }
+
   // to avoid unwanted behaviour, deselect all text
   deselectAll() {
     if (document.selection) {
@@ -75,22 +90,6 @@ class App extends Component {
         "deg)";
       this.setState({ angle: newAngle });
     } // active conditional
-  }
-
-  componentDidMount() {
-    const boxPosition = this.box.getBoundingClientRect();
-    // get the current center point
-    const boxCenterX = boxPosition.left + boxPosition.width / 2;
-    const boxCenterY = boxPosition.top + boxPosition.height / 2;
-
-    // update the state
-    this.setState({
-      boxCenterPoint: { x: boxCenterX, y: boxCenterY }
-    });
-    // in case the event ends outside the box
-    window.onmouseup = this.mouseUpHandler;
-
-    window.onmousemove = this.mouseMoveHandler;
   }
 
   render() {
