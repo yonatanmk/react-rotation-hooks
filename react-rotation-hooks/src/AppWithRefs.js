@@ -1,13 +1,26 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 const App = () => {
   const [box, setBox] = useState(null);
 
   const [isActive, setIsActive] = useState(false);
+  let refIsActive = useRef(isActive);
   const [angle, setAngle] = useState(0);
+  let refAngle = useRef(angle);
   const [startAngle, setStartAngle] = useState(0);
+  let refStartAngle = useRef(startAngle);
   const [currentAngle, setCurrentAngle] = useState(0);
+  let refCurrentAngle = useRef(currentAngle);
   const [boxCenterPoint, setBoxCenterPoint] = useState({});
+  let refBoxCenterPoint = useRef(boxCenterPoint);
+
+  useEffect(() => {
+    refIsActive.current = isActive;
+    refAngle.current = angle;
+    refStartAngle.current = startAngle;
+    refCurrentAngle.current = currentAngle;
+    refBoxCenterPoint.current = boxCenterPoint;
+  });
 
   const setBoxCallback = useCallback(node => {
     if (node !== null) {
@@ -25,13 +38,13 @@ const App = () => {
   }
 
   // method to get the positionof the pointer event relative to the center of the box
-  const getPositionFromCenter = useCallback(e => {
+  const getPositionFromCenter = e => {
     const fromBoxCenter = {
-      x: e.clientX - boxCenterPoint.x,
-      y: -(e.clientY - boxCenterPoint.y)
+      x: e.clientX - refBoxCenterPoint.current.x,
+      y: -(e.clientY - refBoxCenterPoint.current.y)
     };
     return fromBoxCenter;
-  }, [boxCenterPoint])
+  }
 
   const mouseDownHandler = e => {
     e.stopPropagation();
@@ -42,28 +55,28 @@ const App = () => {
     setIsActive(true);
   }
 
-  const mouseUpHandler = useCallback(e => {
+  const mouseUpHandler = e => {
     deselectAll();
     e.stopPropagation();
-    if (isActive) {
-      const newCurrentAngle = currentAngle + (angle - startAngle);
+    if (refIsActive.current) {
+      const newCurrentAngle = refCurrentAngle.current + (refAngle.current - refStartAngle.current);
       setIsActive(false);
       setCurrentAngle(newCurrentAngle);
     }
-  }, [isActive, angle, currentAngle, startAngle])
+  }
 
-  const mouseMoveHandler = useCallback(e => {
-    if (isActive) {
+  const mouseMoveHandler = e => {
+    if (refIsActive.current) {
       const fromBoxCenter = getPositionFromCenter(e);
       const newAngle =
         90 - Math.atan2(fromBoxCenter.y, fromBoxCenter.x) * (180 / Math.PI);
       box.style.transform =
         "rotate(" +
-        (currentAngle + (newAngle - (startAngle ? startAngle : 0))) +
+        (refCurrentAngle.current + (newAngle - (refStartAngle.current ? refStartAngle.current : 0))) +
         "deg)";
       setAngle(newAngle)
     }
-  }, [box, isActive, currentAngle, startAngle, getPositionFromCenter])
+  }
 
   useEffect(() => {
     if (box) {
@@ -75,13 +88,11 @@ const App = () => {
       // update the state
       setBoxCenterPoint({ x: boxCenterX, y: boxCenterY });
     }
-  }, [ box ])
 
-  useEffect(() => {
     // in case the event ends outside the box
     window.onmouseup = mouseUpHandler;
     window.onmousemove = mouseMoveHandler;
-  }, [mouseUpHandler, mouseMoveHandler])
+  }, [ box ])
 
   return (
     <div className="box-container">
