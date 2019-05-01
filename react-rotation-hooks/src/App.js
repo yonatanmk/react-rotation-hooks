@@ -1,19 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 const App = () => {
-  const [box, setBox] = useState(null);
+  const box = useRef(null)
 
   const [isActive, setIsActive] = useState(false);
   const [angle, setAngle] = useState(0);
   const [startAngle, setStartAngle] = useState(0);
   const [currentAngle, setCurrentAngle] = useState(0);
   const [boxCenterPoint, setBoxCenterPoint] = useState({});
-
-  const setBoxCallback = useCallback(node => {
-    if (node !== null) {
-      setBox(node)
-    }
-  }, [])
 
   // to avoid unwanted behaviour, deselect all text
   const deselectAll = () => {
@@ -57,17 +51,17 @@ const App = () => {
       const fromBoxCenter = getPositionFromCenter(e);
       const newAngle =
         90 - Math.atan2(fromBoxCenter.y, fromBoxCenter.x) * (180 / Math.PI);
-      box.style.transform =
+      box.current.style.transform =
         "rotate(" +
         (currentAngle + (newAngle - (startAngle ? startAngle : 0))) +
         "deg)";
       setAngle(newAngle)
     }
-  }, [box, isActive, currentAngle, startAngle, getPositionFromCenter])
+  }, [ isActive, currentAngle, startAngle, getPositionFromCenter])
 
   useEffect(() => {
-    if (box) {
-      const boxPosition = box.getBoundingClientRect();
+    if (box.current) {
+      const boxPosition = box.current.getBoundingClientRect();
       // get the current center point
       const boxCenterX = boxPosition.left + boxPosition.width / 2;
       const boxCenterY = boxPosition.top + boxPosition.height / 2;
@@ -75,7 +69,7 @@ const App = () => {
       // update the state
       setBoxCenterPoint({ x: boxCenterX, y: boxCenterY });
     }
-  }, [ box ])
+  }, [])
 
   useEffect(() => {
     // in case the event ends outside the box
@@ -89,7 +83,7 @@ const App = () => {
         className="box"
         onMouseDown={mouseDownHandler}
         onMouseUp={mouseUpHandler}
-        ref={setBoxCallback}
+        ref={box}
       >
         Rotate
       </div>

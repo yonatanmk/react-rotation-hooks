@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback, useReducer } from 'react';
+import React, { useRef, useEffect, useCallback, useReducer } from 'react';
 
 const App = () => {
-  const [box, setBox] = useState(null);
+  const box = useRef(null)
 
   // const [isActive, setIsActive] = useState(false);
   // const [angle, setAngle] = useState(0);
@@ -11,12 +11,6 @@ const App = () => {
 
   const [state, dispatch] = useReducer(reducer, initialState);
   const { isActive, startAngle, currentAngle, boxCenterPoint } = state;
-
-  const setBoxCallback = useCallback(node => {
-    if (node !== null) {
-      setBox(node)
-    }
-  }, [])
 
   // to avoid unwanted behaviour, deselect all text
   const deselectAll = () => {
@@ -64,7 +58,7 @@ const App = () => {
       const fromBoxCenter = getPositionFromCenter(e);
       const newAngle =
         90 - Math.atan2(fromBoxCenter.y, fromBoxCenter.x) * (180 / Math.PI);
-      box.style.transform =
+      box.current.style.transform =
         "rotate(" +
         (currentAngle + (newAngle - (startAngle ? startAngle : 0))) +
         "deg)";
@@ -74,8 +68,8 @@ const App = () => {
   }, [box, isActive, currentAngle, startAngle, getPositionFromCenter])
 
   useEffect(() => {
-    if (box) {
-      const boxPosition = box.getBoundingClientRect();
+    if (box.current) {
+      const boxPosition = box.current.getBoundingClientRect();
       // get the current center point
       const boxCenterX = boxPosition.left + boxPosition.width / 2;
       const boxCenterY = boxPosition.top + boxPosition.height / 2;
@@ -98,7 +92,7 @@ const App = () => {
         className="box"
         onMouseDown={mouseDownHandler}
         onMouseUp={mouseUpHandler}
-        ref={setBoxCallback}
+        ref={box}
       >
         Rotate
       </div>
